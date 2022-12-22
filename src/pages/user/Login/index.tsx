@@ -1,20 +1,8 @@
 import Footer from '@/components/Footer';
 import {login} from '@/services/ant-design-pro/api';
 import {getFakeCaptcha} from '@/services/ant-design-pro/login';
-import {
-  AlipayCircleOutlined,
-  LockOutlined,
-  MobileOutlined,
-  TaobaoCircleOutlined,
-  UserOutlined,
-  WeiboCircleOutlined,
-} from '@ant-design/icons';
-import {
-  LoginForm,
-  ProFormCaptcha,
-  ProFormCheckbox,
-  ProFormText,
-} from '@ant-design/pro-components';
+import {LockOutlined, MobileOutlined, UserOutlined} from '@ant-design/icons';
+import {LoginForm, ProFormCaptcha, ProFormCheckbox, ProFormText} from '@ant-design/pro-components';
 import {Alert, message, Tabs} from 'antd';
 import React, {useState} from 'react';
 import {history, useModel} from 'umi';
@@ -54,10 +42,7 @@ const Login: React.FC = () => {
   const handleSubmit = async (values: API.LoginParams) => {
     try {
       // 登录
-      const msg = await login({
-        ...values,
-        type,
-      });
+      const msg = await login({...values, type,});
       if (msg.status === 'ok') {
         const defaultLoginSuccessMessage = '登录成功！';
         message.success(defaultLoginSuccessMessage);
@@ -71,7 +56,6 @@ const Login: React.FC = () => {
         history.push(redirect || '/');
         return;
       }
-      console.log(msg);
       // 如果失败去设置用户错误信息
       setUserLoginState(msg);
     } catch (error) {
@@ -88,29 +72,25 @@ const Login: React.FC = () => {
       <div className={styles.content}>
         <LoginForm
           logo={<img alt="logo" src="/logo.svg"/>}
-          title="Ant Design"
-          subTitle={'Ant Design 是西湖区最具影响力的 Web 设计规范'}
+          title="UMS"
+          subTitle={'用户管理系统'}
           initialValues={{
             autoLogin: true,
           }}
-          actions={[
-            '其他登录方式 :',
-            <AlipayCircleOutlined key="AlipayCircleOutlined" className={styles.icon}/>,
-            <TaobaoCircleOutlined key="TaobaoCircleOutlined" className={styles.icon}/>,
-            <WeiboCircleOutlined key="WeiboCircleOutlined" className={styles.icon}/>,
-          ]}
           onFinish={async (values) => {
             await handleSubmit(values as API.LoginParams);
           }}
         >
+
           <Tabs activeKey={type} onChange={setType}>
             <Tabs.TabPane key="account" tab={'账户密码登录'}/>
             <Tabs.TabPane key="mobile" tab={'手机号登录'}/>
           </Tabs>
 
           {status === 'error' && loginType === 'account' && (
-            <LoginMessage content={'错误的用户名和密码(admin/ant.design)'}/>
+            <LoginMessage content={'用户名或密码错误'}/>
           )}
+
           {type === 'account' && (
             <>
               <ProFormText
@@ -119,7 +99,7 @@ const Login: React.FC = () => {
                   size: 'large',
                   prefix: <UserOutlined className={styles.prefixIcon}/>,
                 }}
-                placeholder={'用户名: admin or user'}
+                placeholder={'请输入用户名'}
                 rules={[
                   {
                     required: true,
@@ -133,7 +113,7 @@ const Login: React.FC = () => {
                   size: 'large',
                   prefix: <LockOutlined className={styles.prefixIcon}/>,
                 }}
-                placeholder={'密码: ant.design'}
+                placeholder={'请输入密码'}
                 rules={[
                   {
                     required: true,
@@ -153,7 +133,7 @@ const Login: React.FC = () => {
                   prefix: <MobileOutlined className={styles.prefixIcon}/>,
                 }}
                 name="mobile"
-                placeholder={'请输入手机号！'}
+                placeholder={'请输入手机号'}
                 rules={[
                   {
                     required: true,
@@ -173,7 +153,7 @@ const Login: React.FC = () => {
                 captchaProps={{
                   size: 'large',
                 }}
-                placeholder={'请输入验证码！'}
+                placeholder={'请输入验证码'}
                 captchaTextRender={(timing, count) => {
                   if (timing) {
                     return `${count} ${'秒后重新获取'}`;
