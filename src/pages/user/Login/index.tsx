@@ -1,5 +1,5 @@
 import Footer from '@/components/Footer';
-import {login} from '@/services/ant-design-pro/api';
+import {token, current} from "@/services/ums/api";
 import {getFakeCaptcha} from '@/services/ant-design-pro/login';
 import {LockOutlined, MobileOutlined, UserOutlined} from '@ant-design/icons';
 import {LoginForm, ProFormCaptcha, ProFormCheckbox, ProFormText} from '@ant-design/pro-components';
@@ -29,25 +29,38 @@ const Login: React.FC = () => {
   const {initialState, setInitialState} = useModel('@@initialState');
 
   /** 获取用户信息方法 */
-  const fetchUserInfo = async () => {
-    const userInfo = await initialState?.fetchUserInfo?.();
-    if (userInfo) {
+  // const fetchUserInfo = async () => {
+  //   const userInfo = await initialState?.fetchUserInfo?.();
+  //   if (userInfo) {
+  //     await setInitialState((s) => ({
+  //       ...s,
+  //       currentUser: userInfo,
+  //     }));
+  //   }
+  // };
+  const fetchCurrent = async () => {
+    const currentUser = await current();
+    if (currentUser) {
       await setInitialState((s) => ({
         ...s,
-        currentUser: userInfo,
+        currentUser2: currentUser,
       }));
     }
-  };
+  }
   /** 提交登录 */
   const handleSubmit = async (values: API.LoginParams) => {
     try {
       // 登录
-      const msg = await login({...values, type,});
-      if (msg.status === 'ok') {
-        const defaultLoginSuccessMessage = '登录成功！';
-        message.success(defaultLoginSuccessMessage);
-        await fetchUserInfo();
-        /** 此方法会跳转到 redirect 参数所在的位置 */
+      const response = await token({...values, grant_type: 'password', client_id: 'iyyish', client_secret: 'abc1234!'})
+      if (response.code === '200') {
+        message.success('登录成功');
+        // 存储accessToken
+        await setInitialState((state) => ({
+          ...state,
+          accessToken: {access_token: response?.data?.access_token, refresh_token: response?.data?.refresh_token}
+        }))
+        // 携带令牌请求用户信息、权限信息
+        await fetchCurrent();
         if (!history) return;
         const {query} = history.location;
         const {redirect} = query as {
@@ -56,8 +69,7 @@ const Login: React.FC = () => {
         history.push(redirect || '/');
         return;
       }
-      // 如果失败去设置用户错误信息
-      setUserLoginState(msg);
+      setUserLoginState({status: 'error', type: 'account'})
     } catch (error) {
       const defaultLoginFailureMessage = '登录失败，请重试！';
       message.error(defaultLoginFailureMessage);

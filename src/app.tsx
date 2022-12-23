@@ -6,6 +6,7 @@ import type {RunTimeLayoutConfig} from 'umi';
 import {history} from 'umi';
 import defaultSettings from '../config/defaultSettings';
 import {currentUser as queryCurrentUser} from './services/ant-design-pro/api';
+import {current} from "@/services/ums/api";
 
 const loginPath = '/user/login';
 
@@ -24,6 +25,8 @@ export async function getInitialState(): Promise<{
   currentUser?: API.CurrentUser;
   loading?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
+  accessToken?: UMS.AccessToken;
+  currentUser2?: UMS.CurrentUser;
 }> {
 
   /** 获取当前登录用户信息的方法 */
@@ -37,12 +40,15 @@ export async function getInitialState(): Promise<{
     return undefined;
   };
 
+  const fetchCurrent = async () => {
+    return await current();
+  }
   // 如果不是登录页面，执行
   if (history.location.pathname !== loginPath) {
-    const currentUser = await fetchUserInfo();
+    const currentUser2 = await fetchCurrent();
     return {
       fetchUserInfo,
-      currentUser,
+      currentUser2,
       settings: defaultSettings,
     };
   } else {
@@ -65,7 +71,7 @@ export const layout: RunTimeLayoutConfig = ({initialState, setInitialState}) => 
     onPageChange: () => {
       const {location} = history;
       // 如果没有登录，重定向到 login
-      if (!initialState?.currentUser && location.pathname !== loginPath) {
+      if (!initialState?.currentUser2 && location.pathname !== loginPath) {
         history.push(loginPath);
       }
     },
